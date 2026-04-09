@@ -5,4 +5,4 @@ phases:
       - echo "installing..."
   build:
     commands:
-      - docker build -t flask-app ./pp
+      - docker build -t flask-app ./app
