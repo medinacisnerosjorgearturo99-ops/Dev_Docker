@@ -1,12 +1,20 @@
 #!/bin/bash
 
-# Variables de configuración
-BUCKET_NAME="nombre-de-tu-bucket-s3"
-SOURCE_DIR="./build" # Cambia esto por la carpeta que contiene tus archivos estáticos
+BUCKET_NAME="devops-demo-jorge"
+BACKUP_FILE="backup_$(date +%F).tar.gz"
+LOG_FILE="backup.log"
 
-echo "Iniciando despliegue hacia S3..."
+echo "Iniciando respaldo..." | tee -a $LOG_FILE
 
-# Sincroniza los archivos. '--delete' asegura que se borren del bucket los archivos que ya no están en tu código.
-aws s3 sync $SOURCE_DIR s3://$BUCKET_NAME/ --delete
+# Carpeta actual (donde está tu código en CodeBuild)
+SOURCE_DIR="."
 
-echo "¡Despliegue finalizado exitosamente!"
+# Crear backup
+tar -czf $BACKUP_FILE $SOURCE_DIR >> $LOG_FILE 2>&1
+
+# Subir a S3
+if aws s3 cp $BACKUP_FILE s3://$BUCKET_NAME/ >> $LOG_FILE 2>&1; then
+    echo "Respaldo subido exitosamente." | tee -a $LOG_FILE
+else
+    echo "Error en la subida del respaldo." | tee -a $LOG_FILE
+fi
